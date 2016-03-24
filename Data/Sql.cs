@@ -62,6 +62,36 @@ namespace Data
       return oData;
     }
 
+    public DataSet SPDataSet(string StoredProcedure, Hashtable Args)
+    {
+      DataSet oData = new DataSet();
+
+      SqlCommand oCommand = new SqlCommand(StoredProcedure, _oConnection);
+      oCommand.CommandType = CommandType.StoredProcedure;
+
+      if (Args != null)
+      {
+        foreach (string key in Args.Keys)
+        {
+          oCommand.Parameters.AddWithValue(key, Args[key] == null ? DBNull.Value : Args[key]);
+        }
+      }
+
+      try
+      {
+        _oConnection.Open();
+        using (var da = new SqlDataAdapter(oCommand))
+        {
+          da.Fill(oData);
+        }
+      }
+      finally
+      {
+        _oConnection.Close();
+      }
+      return oData;
+    }
+
     public int SPExec(string StoredProcedure, Hashtable Args)
     {
       object oRetVal;
@@ -100,6 +130,6 @@ namespace Data
         _oConnection.Close();
       }
       return iRowsAffected;
-    }
+    }    
   }
 }
